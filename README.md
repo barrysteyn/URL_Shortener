@@ -12,6 +12,7 @@ Urls are therefore associated with the base 36 representation of their numerical
 
 ##Summary Of Resource URL Patterns
 `/url` takes a hash as input and converts it to the original url
+
 `/hash` - takes a url as input and hashes it into a shortened url.
     
 ##Example Usage - Request The Original Url
