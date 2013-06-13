@@ -7,6 +7,13 @@ URLs are stored in a database and are associated with an unique numerical id tha
 
 Urls are therefore associated with the base 36 representation of their numerical primary key, allowing them to be represented in a concise manner.
 
+###Technologies Used:
+
+ 1. **Server Scripting Language**: Php. The CakePHP framework was used, as this framework can easily add additional functionality (more Api endpoints) and interacts with the http protocol.
+ 2. **Server**: Linux ubuntu, hosted on Amazon AWS EC2.
+ 3. **Web Server**: Apache, mpm-prefork. Apache can be "ramped up" to add more workers if necessary.
+ 4. **Database Server**: Postgres. My favourite RDMS, postgres is stable and fast.
+
 #API Endpoint
 `http://twayd.com`
 
