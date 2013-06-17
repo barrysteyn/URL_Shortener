@@ -3,7 +3,7 @@
 To see this in action, please go to [http://twayd.com](http://twayd.com).
 
 ##How It Works (Briefly)
-URLs are stored in a database and are associated with an unique numerical id that functions as a primary key. This id is in decimal (base 10) format, but it can be more succinctly represented in a higher base. PHP is able to convert to base 36, which uses all the numerical digits as well as the lating alphabet \[0-9,A-Z\].
+URLs are stored in a database and are associated with an unique numerical id that functions as a primary key. This id is in decimal (base 10) format, but it can be more succinctly represented in a higher base. PHP is able to convert to base 36, which uses all the numerical digits as well as the Latin alphabet \[0-9,A-Z\].
 
 Urls are therefore associated with the base 36 representation of their numerical primary key, allowing them to be represented in a concise manner.
 
