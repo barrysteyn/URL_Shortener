@@ -7,6 +7,7 @@ include "../shared_logic/UrlEncode.php";
 //Given a url, obtain/create the hash
 function urlHash($url) {
     $urlEncode = new UrlEncode();
+    $url = $urlEncode->returnUrl($url);
     $result = array();
     global $HOST;
 
