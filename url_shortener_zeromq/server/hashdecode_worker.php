@@ -47,7 +47,7 @@ function url_hash_worker() {
     // Socket to talk to dispatcher
     $context = new ZMQContext();
     $receiver = new ZMQSocket($context, ZMQ::SOCKET_REP);
-    $receiver->connect("ipc://workers.ipc");
+    $receiver->connect("ipc://urlhash.ipc");
 
     while (true) {
         $hashedUrl = $receiver->recv();
@@ -73,7 +73,7 @@ $clients->bind("tcp://*:5555");
 
 //Socket to talk to workers
 $workers = new ZMQSocket($context, ZMQ::SOCKET_DEALER);
-$workers->bind("ipc://workers.ipc");
+$workers->bind("ipc://urlhash.ipc");
 
 //Connect work threads to client threads via a queue
 $device = new ZMQDevice($clients, $workers);

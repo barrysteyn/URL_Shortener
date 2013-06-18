@@ -1,36 +1,59 @@
 <?php
 
+include "../config/core.php";
+include "../config/dbConfig.php";
 include "../shared_logic/UrlEncode.php";
 
-/*
- * Will obtain a URL's hash (if it exists)
- */
-function url_hash_worker() {
+//Given a url, obtain/create the hash
+function urlHash($url) {
     $urlEncode = new UrlEncode();
+    $result = array();
+    global $HOST;
 
-    //Connect to the database - Not happy about using a connection string like this
-    $connString = "host=localhost port=5432 user=postgres dbname=postgres password=b8f9qd40";
-    $dbConnection = pg_connect($connString);
+    if (!$url) {
+        $result["error"] = "No input given";
+    } else {
+        //Database stuff
+        global $dbConnStr; //This comes from dbConfig.php
+        $dbConnection = pg_connect($dbConnStr);
 
+        //First try get the id
+        $query = sprintf("SELECT id FROM urls WHERE url = '%s'",$url); //sprintf to reduce SQL injection attack
+        $dbResult = pg_query($dbConnection, $query);
+        $row = pg_fetch_assoc($dbResult);
+        
+        //The URL does not exist in the DB, so insert it 
+        if (!$row) {
+            $query = sprintf("INSERT INTO urls(url) VALUES('%s') RETURNING id",$url); 
+            $dbResult = pg_query($dbConnection, $query);
+            $row = pg_fetch_assoc($dbResult);
+        }
+
+        if ($row) {
+            $shortenedUrl = $urlEncode->encodeToShortenedUrl($row["id"]);
+            $result["hashedUrl"] = "http://{$HOST}/{$shortenedUrl}";
+        } else {
+            $result["error"] = "Unspecified error: Please email barry.steyn@gmail.com with details";
+        }
+    }
+
+    return json_encode($result);
+}
+
+//ZeroMQ Worker Thread
+function url_hash_worker() {
     // Socket to talk to dispatcher
     $context = new ZMQContext();
     $receiver = new ZMQSocket($context, ZMQ::SOCKET_REP);
-    $receiver->connect("ipc://workers.ipc");
+    $receiver->connect("ipc://urlencode.ipc");
 
     while (true) {
         $url = $receiver->recv();
-        $query = sprintf("SELECT id FROM urls WHERE url = '%s'",$urlEncode->returnUrl($url)); //sprintf to reduce SQL injection attack
-        $result = pg_query($query);
-
-        // Send reply back to client
-        while ($row = pg_fetch_assoc($result)) {
-            $receiver->send($urlEncode->encodeToShortenedUrl($row['id']));
-        }
-        
+        $receiver->send(urlHash($url));        
     }
 }
 
-//  Launch pool of worker threads
+//Launch pool of worker threads
 for ($thread_nbr = 0; $thread_nbr != 1; $thread_nbr++) {
     $pid = pcntl_fork();
     if ($pid == 0) {
@@ -39,19 +62,19 @@ for ($thread_nbr = 0; $thread_nbr != 1; $thread_nbr++) {
     }
 }
 
-//  Prepare our context and sockets
+//Prepare our context and sockets
 $context = new ZMQContext();
 
-//  Socket to talk to clients
+//Socket to talk to clients
 $clients = new ZMQSocket($context, ZMQ::SOCKET_ROUTER);
-$clients->bind("tcp://*:5555");
+$clients->bind("tcp://*:5556");
 
-//  Socket to talk to workers
+//Socket to talk to workers
 $workers = new ZMQSocket($context, ZMQ::SOCKET_DEALER);
-$workers->bind("ipc://workers.ipc");
+$workers->bind("ipc://urlencode.ipc");
 
-//  Connect work threads to client threads via a queue
+//Connect work threads to client threads via a queue
 $device = new ZMQDevice($clients, $workers);
-$device->run ();
+$device->run();
 
 ?>
