@@ -54,7 +54,7 @@ function url_hash_worker() {
 }
 
 //Launch pool of worker threads
-for ($thread_nbr = 0; $thread_nbr != 1; $thread_nbr++) {
+for ($thread_nbr = 0; $thread_nbr != $ENCODEWORKERS; $thread_nbr++) {
     $pid = pcntl_fork();
     if ($pid == 0) {
         url_hash_worker();
